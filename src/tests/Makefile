@@ -6,7 +6,7 @@ CFLAGS += -DDUMP
 CXXFLAGS += 
 LDFLAGS +=
 
-TARGETS = poc
+TARGETS = poc mxu
 
 ETNA_OBJS =
 
@@ -17,5 +17,8 @@ clean:
 	rm -f $(TARGETS)
 
 poc: poc.o $(ETNA_OBJS)
+	$(CXX) $(CFLAGS) -o $@ $^  $(LDFLAGS)
+
+mxu: mxu.o $(ETNA_OBJS)
 	$(CXX) $(CFLAGS) -o $@ $^  $(LDFLAGS)
 

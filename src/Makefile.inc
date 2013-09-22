@@ -12,7 +12,7 @@ COMMON_FLAGS = -O2 -g3 -ggdb3 -Wall -Wmissing-prototypes -DGCABI_${GCABI} $(GCC_
           -I$(TOP)/include \
           -fdiagnostics-show-option \
           -Werror=missing-prototypes -Werror=missing-declarations -Werror=implicit-function-declaration \
-          -Werror=return-type
+          -Werror=return-type -mmxu 
 
 CFLAGS += $(PLATFORM_CFLAGS) $(COMMON_FLAGS) -std=gnu99
 CXXFLAGS += $(PLATFORM_CXXFLAGS) $(COMMON_FLAGS)
