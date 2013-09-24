@@ -7,7 +7,6 @@
 #include "jzasm.h"
 #include "jzmedia.h"
 #include "jz4760_2ddma_hw.h"
-//#include "jz4760e_dcsc.h"
 #include "jz4760_dcsc.h"
 
 #define __p1_text __attribute__ ((__section__ (".p1_text")))

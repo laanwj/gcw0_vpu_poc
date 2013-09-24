@@ -6,7 +6,6 @@ OUTPUT_FORMAT("elf32-tradlittlemips", "elf32-tradbigmips",
 OUTPUT_FORMAT("elf32-littlemips")
 OUTPUT_ARCH(mips)
 /*ENTRY(__start)*/
-SEARCH_DIR("/icdev/toolchain/linux/mipseltools-gcc412-lnx26/mipsel-linux/lib");
 SECTIONS
 {
 

@@ -6,7 +6,7 @@ CFLAGS += -DDUMP
 CXXFLAGS += 
 LDFLAGS +=
 
-TARGETS = poc mxu
+TARGETS = poc poc_fb mxu
 
 ETNA_OBJS =
 
