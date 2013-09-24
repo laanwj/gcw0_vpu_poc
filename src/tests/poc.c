@@ -117,15 +117,6 @@ int main()
         exit(1);
     }
 
-    printf("Prepare dir\n");
-    if(ioctl(fd, TCSM_TOCTL_PREPARE_DIR) < 0)
-    {
-        perror("Cannot enable tcsm");
-        exit(1);
-    }
-
-    printf("After prepare dir\n");
-
     struct vpu_conn *vpu = calloc(1, sizeof(struct vpu_conn));
     vpu->fd = fd;
     vpu->vpu_base = mmap(0, VPU__SIZE, PROT_READ|PROT_WRITE, MAP_SHARED, vpu->fd, VPU__OFFSET);
@@ -223,13 +214,6 @@ int main()
         printf("%x ", val);
     }
     printf("\n");
-
-    printf("Before flush\n");
-    if(ioctl(fd, TCSM_TOCTL_FLUSH_WORK) < 0)
-    {
-        perror("Cannot enable tcsm");
-    }
-    printf("After flush\n");
 
     close(fd);
     return 0;
