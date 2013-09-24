@@ -17,7 +17,7 @@ GCC_EXTRA_OPT   = -Wall -Wno-switch -mips32 -mno-abicalls -fno-pic -Wpointer-ari
 
 GCC_OPT		= $(GCC_ENDIAN_OPT) $(GCC_EXTRA_OPT) -I$(TOP)/include
 
-libs: $(P1_BIN)
+all: $(P1_BIN)
 
 $(P1_OBJ):%.o:%.c
 	$(CC) $(GCC_OPT) -c -o 	$@ 	$<
