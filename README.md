@@ -7,6 +7,18 @@ See also XMBOMX (https://github.com/IngenicSemiconductor/XBOMX).
 
 Usage (test case):
 
+- Make sure that UBIboot sets the AHB1 bus to a stable
+  frequency (166MHz seems to work).
+
+  - If needed, build and apply patch
+
+    git clone https://github.com/gcwnow/UBIBoot.git
+    cd UBIBoot
+    git am /<path_to_here>/patches/UBIBoot-0001-Change-H1CLK-AHB1-VPU-clock-to-166MHz.patch
+    make CONFIG=gcw0
+
+  - Copy bootloader (which of the bin files in `output/gcw0` that you need depends on your specific model) to device and install it
+
 - Make sure you are using a kernel with jz-vpu driver, see the
   https://github.com/gcwnow/linux/tree/jz-3.11-vpu branch
 

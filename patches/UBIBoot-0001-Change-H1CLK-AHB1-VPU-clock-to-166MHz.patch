@@ -1,0 +1,26 @@
+From d9d0c07f34c58dcda500d9ef19ca84cb1696c68d Mon Sep 17 00:00:00 2001
+From: "Wladimir J. van der Laan" <laanwj@gmail.com>
+Date: Tue, 24 Sep 2013 09:41:31 +0200
+Subject: [PATCH] Change H1CLK (AHB1/VPU clock) to 166MHz
+
+This makes the VPU bus run stable.
+---
+ src/board-gcw0.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/board-gcw0.c b/src/board-gcw0.c
+index bef9d7c..3a0421f 100644
+--- a/src/board-gcw0.c
++++ b/src/board-gcw0.c
+@@ -13,7 +13,7 @@
+ /* Authorized values: 1 2 3 4 6 8 12 */
+ #define CFG_CDIV  1
+ #define CFG_H0DIV 6
+-#define CFG_H1DIV 3
++#define CFG_H1DIV 6
+ #define CFG_H2DIV 6
+ #define CFG_PDIV  6
+ #define CFG_C1DIV 2
+-- 
+1.7.9.5
+
