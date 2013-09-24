@@ -11,10 +11,10 @@
 
 #include "jzasm.h"
 #include "jzmedia.h"
-#include "jz_tcsm.h"
+#include "jz_vpu.h"
 #include "jzm_vpu.h"
 
-const char *tcsm_device = "/dev/tcsm";
+const char *jz_vpu_device = "/dev/jz-vpu";
 
 #define EFE__OFFSET 0x13240000
 #define MC__OFFSET 0x13250000
@@ -61,6 +61,7 @@ const char *tcsm_device = "/dev/tcsm";
 #define BIT9	0x00000200
 #define BIT11	0x00000800
 #define BIT13	0x00002000
+#define BIT14	0x00004000
 #define BIT15	0x00008000
 #define BIT20	0x00100000
 #define BIT21	0x00200000
@@ -109,10 +110,10 @@ struct vpu_conn
 #define TEST_TCSM0_WORK_READY 0x0000
 int main()
 {
-    int fd = open(tcsm_device, O_RDWR);
+    int fd = open(jz_vpu_device, O_RDWR);
     if(fd < 0)
     {
-        perror("Can't open tcsm device");
+        perror("Can't open jz-vpu device");
         exit(1);
     }
 
@@ -152,11 +153,10 @@ int main()
 
     S32I2M(xr16, 0x3);
     AUX_OUTREG32(vpu, 0, 1);
-    //printf("AUX status %08x\n", AUX_INREG32(vpu, 0));
     printf("Loading code...\n");
 
+#if 0
     uint32_t cpccr = CPM_INREG32(vpu, 0x0);
-    // CPCCR 0xf <<24 H1CLK
     printf("cpccr is %08x\n", cpccr);
     uint32_t lpcr = CPM_INREG32(vpu, 0x4);
     printf("lpcr is %08x\n", lpcr);
@@ -166,9 +166,10 @@ int main()
     printf("clkgr0 is %08x\n", clkgr0);
     uint32_t clkgr1 = CPM_INREG32(vpu, 0x28);
     printf("clkgr1 is %08x\n", clkgr1);
+#endif
 
-    //for(int x=0; x<0x1000/4; ++x)
-    //    VPU_OUTREG32(vpu, x*4, 0);
+    /* Disable TLB (for now) */
+    VPU_OUTREG32(vpu, REG_SCH_GLBC, SCH_GLBC_HIAXI);
 
     /* Load code into TCSM1 */
     int cfd = open("test1_p1.bin", O_RDONLY);
@@ -192,17 +193,6 @@ int main()
     /* Clear ready token */
     TCSM0_OUTREG32(vpu, TEST_TCSM0_WORK_READY, 0);
     jz_dcache_wb();
-
-    for(int x=0; x<firmware_size/4; ++x)
-    {
-        while(TCSM1_INREG32(vpu, x*4) != firmware[x])
-        {
-            printf("Settle %i\n", x*4);
-            TCSM1_OUTREG32(vpu, x*4, firmware[x]);
-        }
-    }
-    printf("\n");
-    //exit(0);
 
     /* Reset and turn AUX on */
     AUX_OUTREG32(vpu, 0, 1);

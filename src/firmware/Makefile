@@ -13,7 +13,7 @@ LD_ENDIAN_OPT	= -EL
 ABI_DIR		= el/mabi32
 
 #GCC_EXTRA_OPT   = -Wall -Wno-switch -Wpointer-arith -Wredundant-decls -O2 -pipe -ffast-math -fomit-frame-pointer
-GCC_EXTRA_OPT   = -Wall -Wno-switch -mips32 -mno-abicalls -fno-pic -Wpointer-arith -Wredundant-decls -O2 -pipe -ffast-math -fomit-frame-pointer
+GCC_EXTRA_OPT   = -Wall -Wno-switch -mips32 -mno-abicalls -fno-pic -Wpointer-arith -Wredundant-decls -O2 -pipe -ffast-math -fomit-frame-pointer -mmxu
 
 GCC_OPT		= $(GCC_ENDIAN_OPT) $(GCC_EXTRA_OPT) -I$(TOP)/include
 

@@ -9,7 +9,6 @@
 #include <fcntl.h>
 
 #include "jzmedia.h"
-#include "jz_tcsm.h"
 #include "jzm_vpu.h"
 
 int main()

@@ -1,6 +1,8 @@
-#define VP6_P1_USE_PADDR
-#define MPEG4_P1_USE_PADDR
-
+/* Simple test firmware for AUX (VPU).
+ *
+ * For troubleshooting, resulting firmware can be disassembled using:
+ * mipsel-linux-objdump  -D -b binary -EL -mmips:isa32r2 $1
+ */
 #include "jzsys.h"
 #include "jzasm.h"
 #include "jzmedia.h"
@@ -26,15 +28,17 @@ extern int _gp;
 
 __p1_main int main() {
     int x;
-    *((volatile int *)TCSM0_BANK0) = 0x87654321;
-    //S32I2M(xr16, 0x3);
-    //for(x=0; x<16; ++x)
-    //  *((volatile int *)TCSM0_BANK0+4*x) = 0x87654321 + x;
-  i_nop;
-  i_nop;
-  i_nop;
-  i_nop;
-  i_wait();
+    S32I2M(xr16, 0x3);
+    for(x=1; x<16; ++x)
+        *((volatile int *)(TCSM0_BANK0+4*x)) = 0x87654321 + x;
 
-  return 0;
+    /* finally, copy completion token and wait */
+    *((volatile int *)TCSM0_BANK0) = 0x87654321;
+    i_nop;
+    i_nop;
+    i_nop;
+    i_nop;
+    i_wait();
+
+    return 0;
 }
