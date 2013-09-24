@@ -7,6 +7,10 @@ See also XMBOMX (https://github.com/IngenicSemiconductor/XBOMX).
 
 Usage (test case):
 
+- Make sure that you have a version of buildroot
+  (https://github.com/gcwnow/buildroot) later than or equal to commit e151909,
+  with a gcc/binutils cross compiler that supports `-mmxu`.
+
 - Make sure that UBIboot sets the AHB1 bus to a stable
   frequency (166MHz seems to work).
 
