@@ -6,7 +6,7 @@ CFLAGS += -DDUMP
 CXXFLAGS += 
 LDFLAGS +=
 
-TARGETS = poc poc_fb mxu poc_mem
+TARGETS = poc poc_fb mxu poc_mem poc_irq
 
 ETNA_OBJS =
 
@@ -23,6 +23,11 @@ poc_fb: poc_fb.o $(ETNA_OBJS)
 	$(CXX) $(CFLAGS) -o $@ $^  $(LDFLAGS)
 
 poc_mem: poc_mem.o $(ETNA_OBJS)
+	$(CXX) $(CFLAGS) -o $@ $^  $(LDFLAGS)
+
+poc_irq.o: poc_irq.c ../firmware/test4_p1.h
+
+poc_irq: poc_irq.o $(ETNA_OBJS)
 	$(CXX) $(CFLAGS) -o $@ $^  $(LDFLAGS)
 
 mxu: mxu.o $(ETNA_OBJS)

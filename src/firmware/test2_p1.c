@@ -34,6 +34,7 @@ extern int _gp;
 __p1_main int main() {
     int x, y, t, xo;
     S32I2M(xr16, 0x3);
+    unsigned int *fb = FB;
 
     while(1)
     {
@@ -44,7 +45,7 @@ __p1_main int main() {
             for(y=0; y<240; ++y)
             {
                 for(x=0; x<320; ++x)
-                    FB[ptr++] = RGBA(((x+xo-CENTERX)*t)>>8,((y-CENTERY)*t)>>8,((x+xo-CENTERX)*t*(y-CENTERY))>>16,0);
+                    fb[ptr++] = RGBA(((x+xo-CENTERX)*t)>>8,((y-CENTERY)*t)>>8,((x+xo-CENTERX)*t*(y-CENTERY))>>16,0);
             }
         }
         for(xo=1; xo<512; xo++)
@@ -53,7 +54,7 @@ __p1_main int main() {
             for(y=0; y<240; ++y)
             {
                 for(x=0; x<320; ++x)
-                    FB[ptr++] = RGBA(((x+xo-CENTERX)*t)>>8,((y-CENTERY)*t)>>8,((x+xo-CENTERX)*t*(y-CENTERY))>>16,0);
+                    fb[ptr++] = RGBA(((x+xo-CENTERX)*t)>>8,((y-CENTERY)*t)>>8,((x+xo-CENTERX)*t*(y-CENTERY))>>16,0);
             }
         }
         for(t=999; t>=1; t-=2)
@@ -62,7 +63,7 @@ __p1_main int main() {
             for(y=0; y<240; ++y)
             {
                 for(x=0; x<320; ++x)
-                    FB[ptr++] = RGBA(((x+xo-CENTERX)*t)>>8,((y-CENTERY)*t)>>8,((x+xo-CENTERX)*t*(y-CENTERY))>>16,0);
+                    fb[ptr++] = RGBA(((x+xo-CENTERX)*t)>>8,((y-CENTERY)*t)>>8,((x+xo-CENTERX)*t*(y-CENTERY))>>16,0);
             }
         }
     }
