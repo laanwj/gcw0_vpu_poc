@@ -19,6 +19,8 @@ clean:
 poc: poc.o $(ETNA_OBJS)
 	$(CXX) $(CFLAGS) -o $@ $^  $(LDFLAGS)
 
-mxu: mxu.o $(ETNA_OBJS)
+poc_fb: poc_fb.o $(ETNA_OBJS)
 	$(CXX) $(CFLAGS) -o $@ $^  $(LDFLAGS)
 
+mxu: mxu.o $(ETNA_OBJS)
+	$(CXX) $(CFLAGS) -o $@ $^  $(LDFLAGS)

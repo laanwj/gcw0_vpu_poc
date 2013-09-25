@@ -1,4 +1,4 @@
-/* Simple test firmware for AUX (VPU).
+/* Test firmware for AUX (VPU) that renders a simple animation to framebuffer.
  *
  * For troubleshooting, resulting firmware can be disassembled using:
  * mipsel-linux-objdump  -D -b binary -EL -mmips:isa32r2 $1

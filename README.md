@@ -3,8 +3,6 @@ Proof of concept for using the Ingenic JZ4770 vpu core on GCW Zero.
 This does not provide any video acceleration by itself but running code on the VPU
 is the first step towards that.
 
-See also XMBOMX (https://github.com/IngenicSemiconductor/XBOMX).
-
 Usage (test case):
 
 - Make sure that you have a version of buildroot
@@ -38,4 +36,16 @@ Usage (test case):
 - Copy `src/firmware/test1_p1.bin` to device
 - Copy executables in `src/test` to device
 - Run `poc` on device
+
+JZ4780 examples
+===============
+
+See XMBOMX (https://github.com/IngenicSemiconductor/XBOMX). This is a set of video codecs for the
+JZ4780, which is not usable as-is on the JZ4770, but many of the modules (VMAU, EFE, MC, AUX...)
+appear to be similar the same so likely it could be ported or at least used to learn information as
+to how to use the modules.
+The biggest difference between the VPU on JZ4770 and JZ4780 appears to be that the JZ4770 lacks a DMMU, so the
+VPU can only address contiguous buffers in physical memory. Instead of a MMU there is a 8-entry TLB,
+but with that small size it's not very useful in practice and you'll have to use consecutive
+buffers.
 
