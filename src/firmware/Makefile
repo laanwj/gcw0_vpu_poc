@@ -2,7 +2,7 @@ TOP=..
 include $(TOP)/Makefile.inc
 
 # _p1 for processor 1
-BINS		= test1_p1.bin test2_p1.bin
+BINS		= test1_p1.bin test2_p1.bin test3_p1.bin
 
 GCC_ENDIAN_OPT	= -mel
 LD_ENDIAN_OPT	= -EL

@@ -6,7 +6,7 @@ CFLAGS += -DDUMP
 CXXFLAGS += 
 LDFLAGS +=
 
-TARGETS = poc poc_fb mxu
+TARGETS = poc poc_fb mxu poc_mem
 
 ETNA_OBJS =
 
@@ -20,6 +20,9 @@ poc: poc.o $(ETNA_OBJS)
 	$(CXX) $(CFLAGS) -o $@ $^  $(LDFLAGS)
 
 poc_fb: poc_fb.o $(ETNA_OBJS)
+	$(CXX) $(CFLAGS) -o $@ $^  $(LDFLAGS)
+
+poc_mem: poc_mem.o $(ETNA_OBJS)
 	$(CXX) $(CFLAGS) -o $@ $^  $(LDFLAGS)
 
 mxu: mxu.o $(ETNA_OBJS)
