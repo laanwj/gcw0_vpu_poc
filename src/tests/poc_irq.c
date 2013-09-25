@@ -267,7 +267,11 @@ int main()
     double elapsed_time = (time_end - time_start)/1e6;
     printf("Elapsed time: %.2fs\n", elapsed_time);
     printf("Total writes: %.2fMB\n", total_bytes / 1e6);
+#ifdef WRITE
     printf("Write rate: %.2fMB/s\n", (total_bytes / elapsed_time) / 1e6);
+#else
+    printf("Read rate: %.2fMB/s\n", (total_bytes / elapsed_time) / 1e6);
+#endif
 
     /* Turn AUX off */
     AUX_OUTREG32(vpu, REG_AUX_CTRL, AUX_CTRL_SW_RST);

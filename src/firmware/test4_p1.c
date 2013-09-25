@@ -28,15 +28,21 @@ extern int _gp;
 __p1_main int main() {
     int x,y,b;
     S32I2M(xr16, 0x3);
-    const unsigned int addr = TCSM1;
+    const unsigned int addr = ADDRESS;
     /* Do dummy writes to TCSM1 for delay */
     for(y=0; y<CYCLES1; ++y)
     {
         for(x=0; x<CYCLES2; ++x)
         {
             /* Write to all banks */
+#if defined(WRITE)
             for(b=0; b<BANKS; ++b)
-                *((volatile int *)(addr+0x1000*b)) = x;
+                *((volatile int *)(addr+BANK_SIZE*b)) = x;
+#elif defined(READ)
+            volatile unsigned int dummy;
+            for(b=0; b<BANKS; ++b)
+                dummy = *((volatile int *)(addr+BANK_SIZE*b));
+#endif
         }
     }
 
