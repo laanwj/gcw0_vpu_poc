@@ -1,5 +1,7 @@
 /* Proof of concept for using the Ingenic jz4770 vpu as second core.
- * Render directly to frame buffer!
+ * DMA to framebuffer test.
+ * Write tiles from SRAM to frame buffer.
+ * Note: it appears only GP2 can copy to normal RAM.
  */
 #include <stdio.h>
 #include <sys/types.h>
@@ -10,7 +12,9 @@
 #include <stdint.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <linux/fb.h>
 #include <time.h>
+#include <string.h>
 
 #include "jzasm.h"
 #include "jzmedia.h"
@@ -18,7 +22,7 @@
 #include "jzm_vpu.h"
 #include "t_vputlb.h"
 
-#include "../firmware/test4_p1.h"
+#include "../firmware/test5_p1.h"
 
 const char *jz_vpu_device = "/dev/jz-vpu";
 const char *fb_device = "/dev/fb0";
@@ -119,6 +123,19 @@ const char *fb_device = "/dev/fb0";
 #define   AUX_CORE_MSG_MESG_LSB     0
 #define   AUX_CORE_MSG_MESG_MASK    (0xffffffff << AUX_CORE_MSG_MESG_LSB)
 
+/* GP0-2 register definitions */
+#define REG_GPx_DHA        0x0
+#define   GPx_DHA_DHA_LSB    2
+#define   GPx_DHA_DHA_MASK   0xfffffffc
+#define REG_GPx_DCS        0x4
+#define   GPx_DCS_BTN_LSB    16
+#define   GPx_DCS_BTN_MASK   ((0xffff)<<GPx_DCS_BTN_LSB)
+#define   GPx_DCS_NDN_LSB    8
+#define   GPx_DCS_NDN_MASK   ((0xff)<<GPx_DCS_NDN_LSB)
+#define   GPx_DCS_END        BIT2
+#define   GPx_DCS_RST        BIT1
+#define   GPx_DCS_SUP        BIT0
+
 struct vpu_conn
 {
     /* File descriptor for VPU connectino */
@@ -135,6 +152,10 @@ struct vpu_conn
      * This is generally used for communicating from MAIN to AUX.
      */
     void *tcsm1_base;
+    void *gp0_base;
+    void *gp1_base;
+    void *gp2_base;
+    void *sram_base;
 };
 
 /* Macros for easy register access */
@@ -154,6 +175,24 @@ struct vpu_conn
     do { *(volatile uint32_t*)((conn)->tcsm1_base + address) = data; } while (0)
 #define TCSM1_INREG32(conn, address) \
     (*(volatile uint32_t*)((conn)->tcsm1_base + address))
+#define SRAM_OUTREG32(conn, address, data) \
+    do { *(volatile uint32_t*)((conn)->sram_base + address) = data; } while (0)
+#define SRAM_INREG32(conn, address) \
+    (*(volatile uint32_t*)((conn)->sram_base + address))
+
+#define GP0_OUTREG32(conn, address, data) \
+    do { *(volatile uint32_t*)((conn)->gp0_base + address) = data; } while (0)
+#define GP0_INREG32(conn, address) \
+    (*(volatile uint32_t*)((conn)->gp0_base + address))
+#define GP1_OUTREG32(conn, address, data) \
+    do { *(volatile uint32_t*)((conn)->gp1_base + address) = data; } while (0)
+#define GP1_INREG32(conn, address) \
+    (*(volatile uint32_t*)((conn)->gp1_base + address))
+#define GP2_OUTREG32(conn, address, data) \
+    do { *(volatile uint32_t*)((conn)->gp2_base + address) = data; } while (0)
+#define GP2_INREG32(conn, address) \
+    (*(volatile uint32_t*)((conn)->gp2_base + address))
+
 
 /* Get time in microseconds */
 static unsigned long gettime(void)
@@ -177,6 +216,22 @@ int main()
         exit(1);
     }
 
+    int fb = open(fb_device, O_RDWR);
+    if(fb < 0)
+    {
+        perror("Can't open fbdev device");
+        exit(1);
+    }
+    struct fb_var_screeninfo fb_var;
+    struct fb_fix_screeninfo fb_fix;
+    if (ioctl(fb, FBIOGET_VSCREENINFO, &fb_var) ||
+        ioctl(fb, FBIOGET_FSCREENINFO, &fb_fix)) {
+            printf("Error: failed to run ioctl on fbdev device\n");
+        close(fb);
+        exit(1);
+    }
+
+
     struct vpu_conn *vpu = calloc(1, sizeof(struct vpu_conn));
     vpu->fd = fd;
     vpu->sch_base = mmap(0, SCH__SIZE, PROT_READ|PROT_WRITE, MAP_SHARED, vpu->fd, SCH__OFFSET);
@@ -187,6 +242,10 @@ int main()
     vpu->tcsm0_base = mmap(0, TCSM0__SIZE, PROT_READ|PROT_WRITE, MAP_SHARED, vpu->fd, TCSM0__OFFSET);
 #endif
     vpu->tcsm1_base = mmap(0, TCSM1__SIZE, PROT_READ|PROT_WRITE, MAP_SHARED, vpu->fd, TCSM1__OFFSET);
+    vpu->sram_base = mmap(0, SRAM__SIZE, PROT_READ|PROT_WRITE, MAP_SHARED, vpu->fd, SRAM__OFFSET);
+    vpu->gp0_base = mmap(0, GP0__SIZE, PROT_READ|PROT_WRITE, MAP_SHARED, vpu->fd, GP0__OFFSET);
+    vpu->gp1_base = mmap(0, GP1__SIZE, PROT_READ|PROT_WRITE, MAP_SHARED, vpu->fd, GP1__OFFSET);
+    vpu->gp2_base = mmap(0, GP2__SIZE, PROT_READ|PROT_WRITE, MAP_SHARED, vpu->fd, GP2__OFFSET);
 
     if(vpu->aux_base == NULL ||
        vpu->sch_base == NULL ||
@@ -214,12 +273,24 @@ int main()
     S32I2M(xr16, 0x3);
     /* Put AUX in reset state, just in case */
     AUX_OUTREG32(vpu, REG_AUX_CTRL, AUX_CTRL_SW_RST);
+    /* Reset DMA controllers */
+    GP0_OUTREG32(vpu, REG_GPx_DCS, GPx_DCS_RST);
+    GP1_OUTREG32(vpu, REG_GPx_DCS, GPx_DCS_RST);
+    GP2_OUTREG32(vpu, REG_GPx_DCS, GPx_DCS_RST);
+    //GP0_OUTREG32(vpu, REG_GPx_DCS, GPx_DCS_END);
+    //GP1_OUTREG32(vpu, REG_GPx_DCS, GPx_DCS_END);
+    //GP2_OUTREG32(vpu, REG_GPx_DCS, GPx_DCS_END);
     /* Disable TLB (for now) */
     SCH_OUTREG32(vpu, REG_SCH_GLBC, 0); //(1<<GLBC_TLBE_SFT));
 
+    /* Clear memories */
+    memset(vpu->tcsm0_base, 0, TCSM0__SIZE);
+    memset(vpu->tcsm1_base, 0, TCSM1__SIZE);
+    memset(vpu->sram_base, 0, SRAM__SIZE);
+
     /* Load code into TCSM1 */
     printf("Loading code...\n");
-    int cfd = open("test4_p1.bin", O_RDONLY);
+    int cfd = open("test5_p1.bin", O_RDONLY);
     if(cfd < 0)
     {
         perror("Unable to load firmware");
@@ -241,6 +312,7 @@ int main()
     /* Load parameters */
     TCSM1_OUTREG32(vpu, TEST_TCSM1_USER_ADDR, alloc.physical);
     TCSM1_OUTREG32(vpu, TEST_TCSM1_USER_SIZE, alloc.size);
+    TCSM1_OUTREG32(vpu, TEST_TCSM1_FB_ADDR, fb_fix.smem_start);
     /* Reset and turn AUX on, and AUX->MAIN interrupts */
     AUX_OUTREG32(vpu, REG_AUX_CTRL, AUX_CTRL_SW_RST);
     jz_dcache_wb();
@@ -250,8 +322,18 @@ int main()
     /* Wait for execution to complete */
     printf("Executing code...\n");
 
+#if 1
+    uint32_t status=0;
+    while((status & GPx_DCS_END) == 0) /* Track DMA progress */
+    {
+        status = GP2_INREG32(vpu, REG_GPx_DCS);
+        printf("Bytes %04x Task %i End=%i\n",
+                (status & GPx_DCS_BTN_MASK) >> GPx_DCS_BTN_LSB,
+                (status & GPx_DCS_NDN_MASK) >> GPx_DCS_NDN_LSB,
+                (status & GPx_DCS_END)!=0);
+    }
+#endif
     unsigned long time_start = gettime();
-
     /* Wait up to 1000 seconds for completion */
     ret = ioctl(fd, JZ_VPU_IOCTL_WAIT_COMPLETE, 1000000);
     if(ret < 0)
@@ -264,20 +346,14 @@ int main()
 
     uint32_t val = AUX_INREG32(vpu, REG_AUX_MSG);
     printf("Completion token: %08x\n", val);
-    uint64_t total_bytes = (uint64_t)CYCLES1 * (uint64_t)CYCLES2 * (uint64_t)BANKS * 4LL;
     double elapsed_time = (time_end - time_start)/1e6;
     printf("Elapsed time: %.2fs\n", elapsed_time);
-    printf("Total writes: %.2fMB\n", total_bytes / 1e6);
-#ifdef WRITE
-    printf("Write rate: %.2fMB/s\n", (total_bytes / elapsed_time) / 1e6);
-#else
-    printf("Read rate: %.2fMB/s\n", (total_bytes / elapsed_time) / 1e6);
-#endif
 
     /* Turn AUX off */
     AUX_OUTREG32(vpu, REG_AUX_CTRL, AUX_CTRL_SW_RST);
 
     close(fd);
+    close(fb);
     return 0;
 }
 

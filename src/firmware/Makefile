@@ -2,7 +2,7 @@ TOP=..
 include $(TOP)/Makefile.inc
 
 # _p1 for processor 1
-BINS		= test1_p1.bin test2_p1.bin test3_p1.bin test4_p1.bin
+BINS		= test1_p1.bin test2_p1.bin test3_p1.bin test4_p1.bin test5_p1.bin
 
 GCC_ENDIAN_OPT	= -mel
 LD_ENDIAN_OPT	= -EL
@@ -25,7 +25,11 @@ all: $(BINS)
 %.bin:%.lib
 	$(OBJCOPY) -O binary $< 	$@
 
+# Interface header deps
 test4_p1.o: test4_p1.c test4_p1.h
+	$(CC) $(GCC_OPT) -c -o 	$@ 	$<
+
+test5_p1.o: test5_p1.c test5_p1.h
 	$(CC) $(GCC_OPT) -c -o 	$@ 	$<
 
 dep depend::

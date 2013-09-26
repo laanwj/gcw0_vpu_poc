@@ -25,8 +25,8 @@
 #endif
 
 /* Kind of test to perform */
-#define READ
-//#define WRITE
+//#define READ
+#define WRITE
 
 /* TCSM1 locations of parameters */
 #define TEST_TCSM1_USER_ADDR 0x6000

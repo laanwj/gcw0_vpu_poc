@@ -1,15 +1,9 @@
 #ifndef __H264_P1_2DDMA_H__
 #define __H264_P1_2DDMA_H__
 
-#ifdef P1_USE_PADDR
 #define DDMA_GP0_V_BASE 0x13210000
 #define DDMA_GP1_V_BASE 0x13220000
 #define DDMA_GP2_V_BASE 0x13230000
-#else
-#define DDMA_GP0_V_BASE 0xB3210000
-#define DDMA_GP1_V_BASE 0xB3220000
-#define DDMA_GP2_V_BASE 0xB3230000
-#endif
 
 #define DDMA_GP_DHA_OFST 0x0
 #define DDMA_GP_DCS_OFST 0x4
@@ -86,6 +80,8 @@
     NUM: Total for DMA(unit: byte)   
  */
 #define GP_TYP_WORD 0x0
+#define GP_TYP_BYTE 0x1
+#define GP_TYP_HWORD 0x2
 
 #define GP_FRM_NML 0x0
 #define GP_FRM_1K  0x1
@@ -103,19 +99,18 @@
 # define GP_FRM_OPT GP_FRM_NML
 #endif
 
-#define GP_TAG_LK  0x0
-#define GP_TAG_UL  0x1
+#define GP_TAG_LK  0x0 /* More to come */
+#define GP_TAG_UL  0x1 /* Last task */
 
-#define GP_STRD(TST,FRM,TDT)     \
-( GP_TYP_WORD<<30                \
+#define GP_STRD(TYP,TST,FRM,TDT)     \
+( (((TYP) & 0x3)<<30)            \
 | (((TST) & 0x3FFF)<<16)         \
-| (((FRM) & 0x3)<<14)            \ 
+| (((FRM) & 0x3)<<14)            \
 | ((TDT) & 0x3FFF))
 
 #define GP_UNIT(TAG,TRN,NUM)     \
 ( (((TAG) & 0x1)<<31)            \
 | (((TRN) & 0x7FFF)<<16)         \
 | ((NUM) & 0xFFFF))
-
 
 #endif//#ifndef __H264_P1_2DDMA_H__

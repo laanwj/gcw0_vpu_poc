@@ -10,12 +10,14 @@
 #include <stdint.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <string.h>
 #include <linux/fb.h>
 
 #include "jzasm.h"
 #include "jzmedia.h"
 #include "jz_vpu.h"
 #include "jzm_vpu.h"
+#include "t_vputlb.h"
 
 #include "../firmware/test3_p1.h"
 
@@ -193,7 +195,6 @@ int main()
 #endif
     vpu->tcsm1_base = mmap(0, TCSM1__SIZE, PROT_READ|PROT_WRITE, MAP_SHARED, vpu->fd, TCSM1__OFFSET);
 
-
     if(vpu->aux_base == NULL ||
        vpu->sch_base == NULL ||
        vpu->aux_base == NULL ||
@@ -215,13 +216,14 @@ int main()
     }
     printf("Allocated physical memory buffer at %08x\n", (uint32_t)alloc.physical);
     uint32_t *data = mmap(0, alloc.size, PROT_READ|PROT_WRITE, MAP_SHARED, vpu->fd, alloc.physical);
+    memset(data, 0, alloc.size);
 
     /* Enable MXU instructions on main processor */
     S32I2M(xr16, 0x3);
     /* Put AUX in reset state, just in case */
     AUX_OUTREG32(vpu, REG_AUX_CTRL, AUX_CTRL_SW_RST);
     /* Disable TLB (for now) */
-    SCH_OUTREG32(vpu, REG_SCH_GLBC, SCH_GLBC_HIAXI);
+    SCH_OUTREG32(vpu, REG_SCH_GLBC, 0); //(1<<GLBC_TLBE_SFT)); this causes invalid values from memory, so somehow it will use the TLB
 
     /* Load code into TCSM1 */
     printf("Loading code...\n");
