@@ -5,24 +5,17 @@ is the first step towards that.
 
 Usage (test case):
 
-- Make sure that you have a version of buildroot
-  (https://github.com/gcwnow/buildroot) later than or equal to commit e151909,
+- Make sure that you have a version of the toolchain
+  from at least OpenDingux 2013-10-04 or
+  from https://github.com/gcwnow/buildroot later than or equal to commit e151909,
   with a gcc/binutils cross compiler that supports `-mmxu`.
   Otherwise you will get an error during build:
 
     cc1: error: unrecognized command line option ‘-mmxu’
 
-- Make sure that UBIboot sets the AHB1 bus to a stable
-  frequency (166MHz seems to work).
-
-  - If needed, build and apply patch
-
-    git clone https://github.com/gcwnow/UBIBoot.git
-    cd UBIBoot
-    git am /<path_to_here>/patches/UBIBoot-0001-Change-H1CLK-AHB1-VPU-clock-to-166MHz.patch
-    make CONFIG=gcw0
-
-  - Copy bootloader (which of the bin files in `output/gcw0` that you need depends on your specific model) to device and install it
+- Make sure that your UBIboot is the one from at least
+  OpenDingux 2013-10-04 as it sets the AHB1 bus to a stable
+  frequency.
 
 - Make sure you are using a kernel with jz-vpu driver, see the
   https://github.com/gcwnow/linux/tree/jz-3.11-vpu branch
